@@ -1,32 +1,79 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view />
+    <Header></Header>
+    <AddTodo v-on:add-todo="addTodo"></AddTodo>
+    <Todos  v-bind:todos="todos" v-on:del-todo="delTodo" ></Todos>
   </div>
 </template>
 
+<script>
+import Todos from "@/views/Todos";
+import Header from "@/views/layouts/Header";
+import AddTodo from "@/views/AddTodo";
+import axios from 'axios';
+  export default {
+    name: 'app',
+
+    components: {
+      Todos,
+      Header,
+      AddTodo
+    },
+
+    data (){
+      return {
+         todos: []
+      };
+    },
+
+    methods: {
+      delTodo(id)
+      {
+        axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
+        .then(this.todos = this.todos.filter(todo => todo.id !== id))
+        .catch(err => console.log(err));
+      },
+
+      addTodo(newTodo)
+      {
+        const  {title, completed} = newTodo;
+
+        axios.post('https://jsonplaceholder.typicode.com/todos', {
+          title, //same as title: title es6
+          completed
+        })
+        .then(res =>  this.todos = [...this.todos, res.data])
+        .catch(err => console.log(err));
+      }
+    },
+
+    created() {
+      axios.get('https://jsonplaceholder.typicode.com/todos?_limit=5')
+      .then(res => this.todos = res.data)
+      .catch(err => console.log(err));
+    }
+  }
+</script>
+
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-#nav {
-  padding: 30px;
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.4;
 }
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.btn {
+  display: inline-block;
+  border: none;
+  background: #555;
+  color: #fff;
+  padding: 7px 20px;
+  cursor: pointer;
 }
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+.btn:hover {
+  background: #666;
 }
 </style>
